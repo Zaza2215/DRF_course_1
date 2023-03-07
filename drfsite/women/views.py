@@ -1,22 +1,26 @@
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.response import Response
 
 from .models import *
 from .serializers import *
+from .permissions import *
 
 
-class WomenViewSet(viewsets.ModelViewSet):
+class WomenAPIList(generics.ListCreateAPIView):
+    queryset = Women.objects.all()
     serializer_class = WomenSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    def get_queryset(self):
-        pk = self.kwargs.get("pk")
-        if not pk:
-            return Women.objects.all()[:3]
 
-        return Women.objects.filter(pk=pk)
+class WomenAPIUpdate(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Women.objects.all()
+    serializer_class = WomenSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
 
-    @action(methods=['get'], detail=True)
-    def category(self, request, pk=None):
-        cat = Category.objects.get(pk=pk)
-        return Response({"cat": cat.name})
+
+class WomenAPIDestroy(generics.RetrieveDestroyAPIView):
+    queryset = Women.objects.all()
+    serializer_class = WomenSerializer
+    permission_classes = (IsAdminOrReadOnly,)
